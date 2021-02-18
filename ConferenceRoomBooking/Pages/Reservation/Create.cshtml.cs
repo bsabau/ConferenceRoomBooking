@@ -38,10 +38,29 @@ namespace ConferenceRoomBooking.Pages.Rezervations
                 return Page();
             }
 
+            if (OverlapExists(Reservation.RoomID, Reservation.StartTime, Reservation.EndTime))
+            {
+                ModelState.AddModelError("NewReservation", "Dates overlaping!");
+                return OnGet();
+            }
+
             _context.Reservation.Add(Reservation);
             await _context.SaveChangesAsync();
 
             return RedirectToPage("./Index");
         }
+
+        private bool OverlapExists(int id, DateTime start, DateTime end)
+        {
+            return _context.Reservation.Any(e =>
+                e.StartTime <= end &&
+                e.EndTime >= start &&
+                e.RoomID == id);
+        }
     }
 }
+
+
+
+
+

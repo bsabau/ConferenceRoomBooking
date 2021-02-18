@@ -38,8 +38,8 @@ namespace ConferenceRoomBooking.Pages.Rezervations
             {
                 return NotFound();
             }
-           ViewData["RoomID"] = new SelectList(_context.Room, "ID", "Name");
-           ViewData["UserID"] = new SelectList(_context.User, "ID", "Email");
+            ViewData["RoomID"] = new SelectList(_context.Room, "ID", "Name");
+            ViewData["UserID"] = new SelectList(_context.User, "ID", "Email");
             return Page();
         }
 
@@ -49,6 +49,15 @@ namespace ConferenceRoomBooking.Pages.Rezervations
         {
             if (!ModelState.IsValid)
             {
+                return Page();
+            }
+
+            if (OverlapExists(Reservation.RoomID, Reservation.StartTime, Reservation.EndTime))
+            {
+                ModelState.AddModelError("NewReservation", "Dates overlaping!");
+
+                ViewData["RoomID"] = new SelectList(_context.Room, "ID", "Name");
+                ViewData["UserID"] = new SelectList(_context.User, "ID", "Email");
                 return Page();
             }
 
@@ -76,6 +85,13 @@ namespace ConferenceRoomBooking.Pages.Rezervations
         private bool ReservationExists(int id)
         {
             return _context.Reservation.Any(e => e.ReservationID == id);
+        }
+        private bool OverlapExists(int id, DateTime start, DateTime end)
+        {
+            return _context.Reservation.Any(e =>
+                e.StartTime <= end &&
+                e.EndTime >= start &&
+                e.RoomID == id);
         }
     }
 }
